@@ -10,4 +10,9 @@ class RecipientManager(models.Manager):
 
 
 class Recipient(models.Model):
+    uwnetid = models.CharField(max_length=32)
+    created_date = models.DateTimeField(auto_now_add=True)
+    processed_date = models.DateTimeField(null=True)
+    processed_status_code = models.CharField(max_length=3, null=True)
+
     objects = RecipientManager()

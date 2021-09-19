@@ -49,12 +49,15 @@ image:
   tag: IMAGE_TAG
 
 cronjob:
+  enabled: false
+
+daemon:
   enabled: true
-  jobs:
+  daemons:
     - name: process-recipients
-      schedule: "*/15 * * * *"
-      command: ["/scripts/management_command.sh"]
-      args: ["process_recipients"]
+      replicaCount: 1
+      command: ["/scripts/management_daemon.sh"]
+      args: ["--delay", "30", "process_recipients"]
 
 certs:
   mounted: true

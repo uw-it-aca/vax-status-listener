@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.test import RequestFactory, TestCase
-from vs_listener.views import APIView
+from vs_listener.views import ListenerView
 
 
-class APIViewTest(TestCase):
+class ListenerViewTest(TestCase):
     def test_missing_secret(self):
         request = RequestFactory().post('/listener')
-        response = APIView.as_view()(request)
+        response = ListenerView.as_view()(request)
         self.assertEqual(response.status_code, 403)

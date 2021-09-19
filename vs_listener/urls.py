@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.urls import re_path
-from vs_listener.views import APIView
+from vs_listener.views import ListenerView
 
 urlpatterns = [
-    re_path(r'^listener$', APIView.as_view()),
+    re_path(r'^listener$', ListenerView.as_view()),
 ]

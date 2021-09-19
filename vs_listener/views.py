@@ -13,7 +13,7 @@ import json
 
 
 @method_decorator(csrf_exempt, name='dispatch')
-class APIView(View):
+class ListenerView(View):
     def verify_signature(self, request):
         h = hmac.new(getattr(settings, 'DOCUSIGN_CONNECT_SECRET', b''),
                      msg=request.body,
