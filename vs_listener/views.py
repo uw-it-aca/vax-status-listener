@@ -15,7 +15,7 @@ import json
 @method_decorator(csrf_exempt, name='dispatch')
 class APIView(View):
     def verify_signature(self, request):
-        h = hmac.new(getattr(settings, 'DOCUSIGN_CONNECT_SECRET', ''),
+        h = hmac.new(getattr(settings, 'DOCUSIGN_CONNECT_SECRET', b''),
                      msg=request.body,
                      digestmod=hashlib.sha256)
 
@@ -23,7 +23,7 @@ class APIView(View):
 
         # https://developers.docusign.com/platform/webhooks/connect/validate/
         # TODO: might need to compare against multiple headers, _1, _2, etc
-        signature = request.META.get('HTTP_X_DOCUSIGN_SIGNATURE_1')
+        signature = request.META.get('HTTP_X_DOCUSIGN_SIGNATURE_1', '')
 
         return hmac.compare_digest(digest, signature)
 

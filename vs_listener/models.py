@@ -8,5 +8,5 @@ class RecipientManager(models.Manager):
     pass
 
 
-class class Recipient(models.Model):
+class Recipient(models.Model):
     objects = RecipientManager()
