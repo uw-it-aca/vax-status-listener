@@ -1,0 +1,8 @@
+[run]
+source = vax-status-listener
+parallel = True
+
+[paths]
+source =
+  vs_listener/
+  /app/vs_listener/
