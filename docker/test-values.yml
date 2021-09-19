@@ -49,7 +49,12 @@ image:
   tag: IMAGE_TAG
 
 cronjob:
-  enabled: false
+  enabled: true
+  jobs:
+    - name: process-recipients
+      schedule: "*/15 * * * *"
+      command: ["/scripts/management_command.sh"]
+      args: ["process_recipients"]
 
 certs:
   mounted: true

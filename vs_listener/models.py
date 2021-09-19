@@ -5,7 +5,8 @@ from django.db import models
 
 
 class RecipientManager(models.Manager):
-    pass
+    def process_recipients(self):
+        pass
 
 
 class Recipient(models.Model):
