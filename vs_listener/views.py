@@ -9,22 +9,31 @@ from django.views.decorators.csrf import csrf_exempt
 import hmac
 import hashlib
 import json
+import base64
 
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ListenerView(View):
     def verify_signature(self, request):
-        h = hmac.new(getattr(settings, 'DOCUSIGN_CONNECT_SECRET', b''),
-                     msg=request.body,
-                     digestmod=hashlib.sha256)
+        hash_bytes = hmac.new(
+            getattr(settings, 'DOCUSIGN_CONNECT_SECRET', b''),
+            msg=request.body,
+            digestmod=hashlib.sha256).digest()
 
-        digest = 'sha256={}'.format(h.hexdigest())
+        b64hash = base64.b64encode(hash_bytes)
 
         # https://developers.docusign.com/platform/webhooks/connect/validate/
         # TODO: might need to compare against multiple headers, _1, _2, etc
-        signature = request.META.get('HTTP_X_DOCUSIGN_SIGNATURE_1', '')
+        for i in range(1, 25):
+            try:
+                signature_key = 'HTTP_X_DOCUSIGN_SIGNATURE_{}'.format(i)
+                signature = request.META[signature_key].encode('utf_8')
+                if hmac.compare_digest(signature, b64hash):
+                    return True
+            except KeyError:
+                break
 
-        return hmac.compare_digest(digest, signature)
+        return False
 
     def post(self, request, *args, **kwargs):
         # Verify message signature
