@@ -49,20 +49,20 @@ image:
   tag: IMAGE_TAG
 
 cronjob:
-  enabled: false
+  enabled: true
+  jobs:
+    - name: process-envelopes
+      schedule: "*/15 * * * *"
+      command: ["/scripts/management_command.sh"]
+      args: ["process_envelopes"]
 
 daemon:
-  enabled: true
-  daemons:
-    - name: process-recipients
-      replicaCount: 1
-      command: ["/scripts/management_daemon.sh"]
-      args: ["--delay", "30", "process_recipients"]
+  enabled: false
 
 certs:
   mounted: true
-  certPath: /certs/vxstat-dev.axdd.s.uw.edu-ic.cert
-  keyPath: /certs/vxstat-dev.axdd.s.uw.edu-ic.key
+  certPath: /certs/vxstat-client-dev.axdd.s.uw.edu-ic.cert
+  keyPath: /certs/vxstat-client-dev.axdd.s.uw.edu-ic.key
   secretName: vxstat-dev.axdd.s.uw.edu-ic-certs
 
 environmentVariables:
@@ -93,10 +93,10 @@ externalSecrets:
     - name: vxstat-dev.axdd.s.uw.edu-ic-certs
       externalKey: axdd/kv/data/vxstat/test/ic-certs
       data:
-        - name: vxstat-dev.axdd.s.uw.edu-ic.cert
-          property: vxstat-dev.axdd.s.uw.edu-ic.cert
-        - name: vxstat-dev.axdd.s.uw.edu-ic.key
-          property: vxstat-dev.axdd.s.uw.edu-ic.key
+        - name: vxstat-client-dev.axdd.s.uw.edu-ic.cert
+          property: vxstat-client-dev.axdd.s.uw.edu-ic.cert
+        - name: vxstat-client-dev.axdd.s.uw.edu-ic.key
+          property: vxstat-client-dev.axdd.s.uw.edu-ic.key
 
 environmentVariablesSecrets:
   djangoSecret:

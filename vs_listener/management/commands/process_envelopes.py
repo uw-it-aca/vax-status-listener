@@ -2,11 +2,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.core.management.base import BaseCommand, CommandError
-from vs_listener.models import Recipient
+from vs_listener.models import Envelope
 
 
 class Command(BaseCommand):
-    help = "Process recipient notifications"
+    help = "Process envelope notifications"
 
     def handle(self, *args, **options):
-        Recipient.objects.process()
+        Envelope.objects.process()

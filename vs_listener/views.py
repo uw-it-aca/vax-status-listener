@@ -6,7 +6,6 @@ from django.views import View
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from vs_listener.models import Recipient
 import hmac
 import hashlib
 import json
