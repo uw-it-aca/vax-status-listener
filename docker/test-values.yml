@@ -49,9 +49,9 @@ image:
   tag: IMAGE_TAG
 
 cronjob:
-  enabled: true
+  enabled: false
   jobs:
-    - name: process-envelopes
+    - name: process-env
       schedule: "*/15 * * * *"
       command: ["/scripts/management_command.sh"]
       args: ["process_envelopes"]
