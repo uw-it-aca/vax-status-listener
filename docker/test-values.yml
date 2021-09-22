@@ -14,10 +14,6 @@ ingress:
     cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/client-body-buffer-size: "16K"
 
-autoscaling:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 1
 lifecycle:
   enabled: true
   preStop:
