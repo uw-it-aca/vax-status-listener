@@ -2,9 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
+from django.conf import settings
 from django.utils.functional import cached_property
 from dateutil.parser import parse
-from uw_pws import PWS
+from uw_pws import PWS, InvalidNetID
 
 
 class User(models.Model):
@@ -23,21 +24,25 @@ class User(models.Model):
 
     @staticmethod
     def valid_email(email):
-        return len(email) and email.endswith('@uw.edu')
+        try:
+            (username, domain) = email.split('@')
+            if (PWS().valid_uwnetid(username) and
+                    domain in getattr(settings, 'EMAIL_DOMAINS', [])):
+                return True
+        except ValueError:
+            pass
+        return False
 
 
 class EnvelopeManager(models.Manager):
     def add_envelope(self, data):
-        status = data.get('status')
-        if status not in Envelope.VALID_STATUS:
-            return
-
         for signer in data.get('recipients', {}).get('signers', []):
-            if (signer.get('roleName') == 'Student' and
-                    User.valid_email(signer.get('email', ''))):
-                user, _ = User.objects.get_or_create(email=signer.get('email'))
-                envelope = Envelope(user=user, status=status)
-                envelope.reason = ''
+            role = signer.get('roleName', '').lower()
+            email = signer.get('email', '')
+            if (role == Envelope.VALID_ROLE and User.valid_email(email)):
+                user, _ = User.objects.get_or_create(email=email)
+                envelope = Envelope(user=user, status=data.get('status'))
+                envelope.reason = 'hmm'
                 envelope.status_changed_date = parse(
                     data.get('statusChangedDateTime'))
                 # envelope.save()
@@ -64,6 +69,7 @@ class Envelope(models.Model):
        ('voided', 'voided')
     )
     VALID_STATUS = [s[0] for s in STATUS_CHOICES]
+    VALID_ROLE = 'student'
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.SlugField(max_length=12, choices=STATUS_CHOICES)
