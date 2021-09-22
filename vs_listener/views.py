@@ -50,10 +50,11 @@ class ListenerView(View):
         except Exception as ex:
             return HttpResponse('{}'.format(ex), status=400)
 
-        if data.get('status') in Envelope.VALID_STATUS:
+        status = data.get('status')
+        if status in Envelope.VALID_STATUS:
             envelope = Envelope.objects.add_envelope(data)
-            notification_status_counter(envelope.status)
+            notification_status_counter(status)
         else:
-            notification_status_ignored_counter(data.get('status'))
+            notification_status_ignored_counter(status)
 
         return HttpResponse(status=200)
