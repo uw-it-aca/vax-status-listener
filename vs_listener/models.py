@@ -76,7 +76,7 @@ class Envelope(models.Model):
     status = models.SlugField(max_length=12, choices=STATUS_CHOICES)
     reason = models.CharField(max_length=64)
     status_changed_date = models.DateTimeField()
-    #guid = models.CharField(max_length=64, unique=True)
+    guid = models.CharField(max_length=64, unique=True)
     created_date = models.DateTimeField(auto_now_add=True)
     processed_date = models.DateTimeField(null=True)
     processed_status_code = models.CharField(max_length=3, null=True)
