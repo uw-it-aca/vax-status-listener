@@ -29,7 +29,7 @@ class User(models.Model):
             if (PWS().valid_uwnetid(username) and
                     domain in getattr(settings, 'EMAIL_DOMAINS', [])):
                 return True
-        except ValueError:
+        except (AttributeError, ValueError):
             pass
         return False
 
@@ -43,6 +43,7 @@ class EnvelopeManager(models.Manager):
                 user, _ = User.objects.get_or_create(email=email)
                 envelope = Envelope(user=user, status=data.get('status'))
                 envelope.reason = 'hmm'
+                envelope.guid = data.get('envelopeId')
                 envelope.status_changed_date = parse(
                     data.get('statusChangedDateTime'))
                 # envelope.save()
@@ -73,8 +74,9 @@ class Envelope(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.SlugField(max_length=12, choices=STATUS_CHOICES)
-    reason = models.CharField(max_length=64, null=True)
+    reason = models.CharField(max_length=64)
     status_changed_date = models.DateTimeField()
+    guid = models.CharField(max_length=64, unique=True)
     created_date = models.DateTimeField(auto_now_add=True)
     processed_date = models.DateTimeField(null=True)
     processed_status_code = models.CharField(max_length=3, null=True)
