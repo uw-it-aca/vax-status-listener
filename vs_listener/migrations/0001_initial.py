@@ -25,6 +25,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('status', models.SlugField(choices=[('signed', 'signed'), ('completed', 'completed'), ('declined', 'declined'), ('voided', 'voided')], max_length=12)),
                 ('reason', models.CharField(max_length=64, null=True)),
+                ('guid', models.CharField(max_length=64, unique=True)),
                 ('status_changed_date', models.DateTimeField()),
                 ('created_date', models.DateTimeField(auto_now_add=True)),
                 ('processed_date', models.DateTimeField(null=True)),
