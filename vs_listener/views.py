@@ -6,6 +6,7 @@ from django.views import View
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from vs_listener.models import Envelope
 import hmac
 import hashlib
 import json
@@ -23,7 +24,6 @@ class ListenerView(View):
         b64hash = base64.b64encode(hash_bytes)
 
         # https://developers.docusign.com/platform/webhooks/connect/validate/
-        # TODO: might need to compare against multiple headers, _1, _2, etc
         for i in range(1, 25):
             try:
                 signature_key = 'HTTP_X_DOCUSIGN_SIGNATURE_{}'.format(i)
@@ -36,7 +36,6 @@ class ListenerView(View):
         return False
 
     def post(self, request, *args, **kwargs):
-        # Verify message signature
         if not self.verify_signature(request):
             return HttpResponse('Invalid signature', status=403)
 
@@ -44,5 +43,7 @@ class ListenerView(View):
             data = json.loads(request.body)
         except Exception as ex:
             return HttpResponse('{}'.format(ex), status=400)
+
+        envelope = Envelope.objects.add_envelope(data)
 
         return HttpResponse(status=200)
