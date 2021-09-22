@@ -14,6 +14,7 @@ setup(
     install_requires=[
         'Django~=3.2',
         'UW-RestClients-SWS~=2.3',
+        'UW-RestClients-PWS~=2.1',
         'psycopg2<2.9',
     ],
     license='Apache License, Version 2.0',

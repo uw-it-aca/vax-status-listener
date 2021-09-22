@@ -6,6 +6,10 @@ from django.views import View
 from django.http import HttpResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
+from vs_listener.models import Envelope
+from vs_listener.metrics import (
+    notification_counter, notification_invalid_counter,
+    notification_status_ignored_counter, notification_status_counter)
 import hmac
 import hashlib
 import json
@@ -23,7 +27,6 @@ class ListenerView(View):
         b64hash = base64.b64encode(hash_bytes)
 
         # https://developers.docusign.com/platform/webhooks/connect/validate/
-        # TODO: might need to compare against multiple headers, _1, _2, etc
         for i in range(1, 25):
             try:
                 signature_key = 'HTTP_X_DOCUSIGN_SIGNATURE_{}'.format(i)
@@ -36,13 +39,21 @@ class ListenerView(View):
         return False
 
     def post(self, request, *args, **kwargs):
-        # Verify message signature
+        notification_counter()
+
         if not self.verify_signature(request):
+            notification_invalid_counter()
             return HttpResponse('Invalid signature', status=403)
 
         try:
             data = json.loads(request.body)
         except Exception as ex:
             return HttpResponse('{}'.format(ex), status=400)
+
+        if data.get('status') in Envelope.VALID_STATUS:
+            envelope = Envelope.objects.add_envelope(data)
+            notification_status_counter(envelope.status)
+        else:
+            notification_status_ignored_counter(data.get('status'))
 
         return HttpResponse(status=200)
