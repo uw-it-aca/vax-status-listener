@@ -99,4 +99,4 @@ class Envelope(models.Model):
 
     @staticmethod
     def valid_role(role):
-        return role.lower() == getattr(settings, 'SIGNER_ROLE')
+        return role.lower() in getattr(settings, 'SIGNER_ROLES', [])
