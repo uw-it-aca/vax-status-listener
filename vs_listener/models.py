@@ -36,18 +36,25 @@ class User(models.Model):
 
 class EnvelopeManager(models.Manager):
     def add_envelope(self, data):
+        if not Envelope.valid_status(data.get('status')):
+            return
+
         for signer in data.get('recipients', {}).get('signers', []):
-            role = signer.get('roleName', '').lower()
-            email = signer.get('email', '')
-            if (role == Envelope.VALID_ROLE and User.valid_email(email)):
-                user, _ = User.objects.get_or_create(email=email)
-                envelope = Envelope(user=user, status=data.get('status'))
-                envelope.reason = 'hmm'
-                envelope.guid = data.get('envelopeId')
-                envelope.status_changed_date = parse(
-                    data.get('statusChangedDateTime'))
-                # envelope.save()
-                return envelope
+            if (not Envelope.valid_role(signer.get('roleName', '')) or
+                    not User.valid_email(signer.get('email', ''))):
+                continue
+
+            user, _ = User.objects.get_or_create(email=signer.get('email'))
+
+            guid = data.get('envelopeId')
+            envelope, _ = Envelope.objects.get_or_create(guid=guid, defaults={
+                'user': user,
+                'status': data.get('status'),
+                'reason': 'unknown',
+                'status_changed_date': parse(
+                    data.get('statusChangedDateTime')),
+            })
+            return envelope
 
     def process_envelopes(self):
         """
@@ -70,13 +77,12 @@ class Envelope(models.Model):
        ('voided', 'voided')
     )
     VALID_STATUS = [s[0] for s in STATUS_CHOICES]
-    VALID_ROLE = 'student'
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.SlugField(max_length=12, choices=STATUS_CHOICES)
     reason = models.CharField(max_length=64)
     status_changed_date = models.DateTimeField()
-    guid = models.CharField(max_length=64, unique=True)
+    guid = models.CharField(max_length=36, unique=True)
     created_date = models.DateTimeField(auto_now_add=True)
     processed_date = models.DateTimeField(null=True)
     processed_status_code = models.CharField(max_length=3, null=True)
@@ -84,4 +90,13 @@ class Envelope(models.Model):
     objects = EnvelopeManager()
 
     def __str__(self):
-        return '{}, {}, {}'.format(self.user, self.status, self.reason)
+        return 'user: {}, status: {}, reason: {}'.format(
+            self.user, self.status, self.reason)
+
+    @staticmethod
+    def valid_status(status):
+        return status.lower() in Envelope.VALID_STATUS
+
+    @staticmethod
+    def valid_role(role):
+        return role.lower() == getattr(settings, 'SIGNER_ROLE')

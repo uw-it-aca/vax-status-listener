@@ -31,4 +31,21 @@ class UserModelTest(TestCase):
 
 
 class EnvelopeModelTest(TestCase):
-    pass
+    def test_valid_status(self):
+        self.assertTrue(Envelope.valid_status('completed'))
+        self.assertTrue(Envelope.valid_status('COMPLETED'))
+        self.assertFalse(Envelope.valid_status(''))
+        self.assertFalse(Envelope.valid_status('sent'))
+
+    def test_valid_role(self):
+        self.assertTrue(Envelope.valid_role('STUDENT'))
+        self.assertTrue(Envelope.valid_role('student'))
+        self.assertFalse(Envelope.valid_role(''))
+        self.assertFalse(Envelope.valid_role('admin'))
+
+    def test_str(self):
+        user = User(email='javerage@uw.edu')
+        env = Envelope(user=user, status='completed', reason='unknown')
+        self.assertEqual(
+            str(env),
+            'user: javerage@uw.edu, status: completed, reason: unknown')
