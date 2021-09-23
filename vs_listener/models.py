@@ -36,7 +36,7 @@ class User(models.Model):
 
 class EnvelopeManager(models.Manager):
     def add_envelope(self, data):
-        if data.get('status') not in Envelope.VALID_STATUS:
+        if not Envelope.valid_status(data.get('status')):
             return
 
         for signer in data.get('recipients', {}).get('signers', []):
@@ -90,7 +90,12 @@ class Envelope(models.Model):
     objects = EnvelopeManager()
 
     def __str__(self):
-        return '{}, {}, {}'.format(self.user, self.status, self.reason)
+        return 'user: {}, status: {}, reason: {}'.format(
+            self.user, self.status, self.reason)
+
+    @staticmethod
+    def valid_status(status):
+        return status.lower() in Envelope.VALID_STATUS
 
     @staticmethod
     def valid_role(role):

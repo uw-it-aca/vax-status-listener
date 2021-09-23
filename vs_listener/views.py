@@ -51,7 +51,7 @@ class ListenerView(View):
             return HttpResponse('{}'.format(ex), status=400)
 
         status = data.get('status')
-        if status in Envelope.VALID_STATUS:
+        if Envelope.valid_status(status):
             envelope = Envelope.objects.add_envelope(data)
             notification_status_counter(status)
         else:
