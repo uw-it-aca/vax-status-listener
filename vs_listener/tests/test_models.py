@@ -45,7 +45,7 @@ class EnvelopeModelTest(TestCase):
 
     def test_str(self):
         user = User(email='javerage@uw.edu')
-        env = Envelope(user=user, status='completed', reason='unknown')
+        env = Envelope(user=user, status='completed', form_name='unknown')
         self.assertEqual(
             str(env),
-            'user: javerage@uw.edu, status: completed, reason: unknown')
+            'user: javerage@uw.edu, status: completed, form_name: unknown')
