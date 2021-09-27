@@ -1,0 +1,111 @@
+ingress:
+  enabled: true
+  tls:
+    vxstat:
+      secretName: vxstat-dev.axdd.s.uw.edu-ingress-cert
+      hosts:
+        - vxstat-dev.axdd.s.uw.edu
+  hosts:
+    vxstat:
+      host: vxstat-dev.axdd.s.uw.edu
+      paths:
+        - "/"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/client-body-buffer-size: "16K"
+
+lifecycle:
+  enabled: true
+  preStop:
+    enabled: true
+affinity:
+  podsSpanNodes: true
+readiness:
+  enabled: true
+securityPolicy:
+  enabled: true
+labels:
+  billing-code: "830"
+
+externalService:
+  enabled: true
+  name: vxstat-db-service
+  type: ClusterIP
+  serviceAddress: 172.18.1.252
+  servicePort: 5432
+database:
+  engine: postgres
+  name: vxstat-test
+  hostname: vxstat-db-service
+  secretName: vxstat-dev.axdd.s.uw.edu-sql-secrets
+
+memcached:
+  enabled: false
+
+repo: vax-status-listener
+instance: test
+image:
+  repository: gcr.io/uwit-mci-axdd/vax-status-listener
+  tag: IMAGE_TAG
+
+cronjob:
+  enabled: false
+  jobs:
+    - name: process-env
+      schedule: "*/15 * * * *"
+      command: ["/scripts/management_command.sh"]
+      args: ["process_envelopes"]
+
+daemon:
+  enabled: false
+
+certs:
+  mounted: true
+  certPath: /certs/vxstat-client-dev.axdd.s.uw.edu-ic.cert
+  keyPath: /certs/vxstat-client-dev.axdd.s.uw.edu-ic.key
+  secretName: vxstat-dev.axdd.s.uw.edu-ic-certs
+
+environmentVariables:
+  - name: ENV
+    value: test
+  - name: CLUSTER_CNAME
+    value: vxstat-dev.axdd.s.uw.edu
+  - name: SWS_ENV
+    value: EVAL
+  - name: PWS_ENV
+    value: EVAL
+
+externalSecrets:
+  enabled: true
+  secrets:
+    - name: vxstat-dev.axdd.s.uw.edu-secrets
+      externalKey: axdd/kv/data/vxstat/test/secrets
+      data:
+        - name: django-secret
+          property: django-secret
+        - name: docusign-connect-secret
+          property: docusign-connect-secret
+    - name: vxstat-dev.axdd.s.uw.edu-sql-secrets
+      externalKey: axdd/kv/data/vxstat/shared/sql-secrets
+      data:
+        - name: username
+          property: username
+        - name: password
+          property: password
+    - name: vxstat-dev.axdd.s.uw.edu-ic-certs
+      externalKey: axdd/kv/data/vxstat/test/ic-certs
+      data:
+        - name: vxstat-client-dev.axdd.s.uw.edu-ic.cert
+          property: vxstat-client-dev.axdd.s.uw.edu-ic.cert
+        - name: vxstat-client-dev.axdd.s.uw.edu-ic.key
+          property: vxstat-client-dev.axdd.s.uw.edu-ic.key
+
+environmentVariablesSecrets:
+  djangoSecret:
+    name: DJANGO_SECRET
+    secretName: vxstat-dev.axdd.s.uw.edu-secrets
+    secretKey: django-secret
+  githubWebhookSecret:
+    name: DOCUSIGN_CONNECT_SECRET
+    secretName: vxstat-dev.axdd.s.uw.edu-secrets
+    secretKey: docusign-connect-secret

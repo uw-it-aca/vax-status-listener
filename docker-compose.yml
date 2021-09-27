@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  app:
+    environment:
+      ENV: localdev
+      PORT: 8000
+    restart: always
+    container_name: app-vs-listener
+    build:
+      context: .
+      target: app-container
+    volumes:
+      - ./vs_listener:/app/vs_listener
+    ports:
+      - "8000:8000"
