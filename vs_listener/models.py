@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
+from django.db.models import Q
 from django.conf import settings
 from django.utils.functional import cached_property
 from dateutil.parser import parse
@@ -50,7 +51,7 @@ class EnvelopeManager(models.Manager):
             envelope, _ = Envelope.objects.get_or_create(guid=guid, defaults={
                 'user': user,
                 'status': data.get('status'),
-                'reason': 'unknown',
+                'form_name': data.get('powerForm', {}).get('name'),
                 'status_changed_date': parse(
                     data.get('statusChangedDateTime')),
             })
@@ -64,9 +65,14 @@ class EnvelopeManager(models.Manager):
         - student identifier (likely uwnetid)
         - "covid block reg status"
         - "document review status"
-        - exemption flag [set/unset] (need reason?)
+        - exemption flag [set/unset]
         """
-        pass
+        envelopes = super(EnvelopeManager, self).get_queryset().filter(
+            Q(processed_date__isnull=True) | ~Q(processed_status_code=200)
+        ).order_by('created_date')
+
+        for envelope in envelopes:
+            envelope.update_sws()
 
 
 class Envelope(models.Model):
@@ -80,7 +86,7 @@ class Envelope(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     status = models.SlugField(max_length=12, choices=STATUS_CHOICES)
-    reason = models.CharField(max_length=64)
+    form_name = models.CharField(max_length=100)
     status_changed_date = models.DateTimeField()
     guid = models.CharField(max_length=36, unique=True)
     created_date = models.DateTimeField(auto_now_add=True)
@@ -90,8 +96,11 @@ class Envelope(models.Model):
     objects = EnvelopeManager()
 
     def __str__(self):
-        return 'user: {}, status: {}, reason: {}'.format(
-            self.user, self.status, self.reason)
+        return 'user: {}, status: {}, form_name: {}'.format(
+            self.user, self.status, self.form_name)
+
+    def update_sws(self):
+        pass
 
     @staticmethod
     def valid_status(status):
