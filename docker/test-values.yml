@@ -9,7 +9,7 @@ ingress:
     vxstat:
       host: vxstat-dev.axdd.s.uw.edu
       paths:
-        - "/"
+        - "/listener"
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt
     nginx.ingress.kubernetes.io/client-body-buffer-size: "16K"
