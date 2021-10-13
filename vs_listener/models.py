@@ -69,15 +69,6 @@ class EnvelopeManager(models.Manager):
             return envelope
 
     def process_envelopes(self):
-        """
-        PUT/POST? /student/v5/person/{regid}/registrationblocks
-
-        Upon form delivered/completed and decline/voided  (TBD)
-        - student identifier (likely uwnetid)
-        - "covid block reg status"
-        - "document review status"
-        - exemption flag [set/unset]
-        """
         envelopes = super(EnvelopeManager, self).get_queryset().filter(
             Q(processed_date__isnull=True) | ~Q(processed_status_code=200)
         ).order_by('created_date')
