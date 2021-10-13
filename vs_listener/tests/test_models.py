@@ -37,6 +37,15 @@ class EnvelopeModelTest(TestCase):
         self.assertFalse(Envelope.valid_status(''))
         self.assertFalse(Envelope.valid_status('sent'))
 
+    def test_exemption_status_code(self):
+        env = Envelope(status='completed')
+        self.assertEqual(env.exemption_status_code,
+                         Envelope.STATUS_CODE_ALLOWED)
+
+        env = Envelope(status='declined')
+        self.assertEqual(env.exemption_status_code,
+                         Envelope.STATUS_CODE_BLOCKED)
+
     def test_valid_role(self):
         self.assertTrue(Envelope.valid_role('STUDENT'))
         self.assertTrue(Envelope.valid_role('student'))
