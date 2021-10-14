@@ -13,7 +13,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'Django~=3.2',
-        'UW-RestClients-SWS~=2.3',
+        'UW-RestClients-SWS>=2.3.17',
         'UW-RestClients-PWS~=2.1',
         'psycopg2<2.9',
     ],
