@@ -110,7 +110,7 @@ class Envelope(models.Model):
     def update_sws(self):
         try:
             block = RegistrationBlock(
-                uwregid=user.uwregid,
+                uwregid=self.user.uwregid,
                 covid19_status_code=self.exemption_status_code,
                 covid19_status_date=self.status_changed_date,
             )
