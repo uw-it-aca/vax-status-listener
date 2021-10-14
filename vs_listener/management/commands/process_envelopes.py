@@ -9,4 +9,4 @@ class Command(BaseCommand):
     help = "Process envelope notifications"
 
     def handle(self, *args, **options):
-        Envelope.objects.process()
+        Envelope.objects.process_envelopes()
