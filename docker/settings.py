@@ -11,3 +11,8 @@ DOCUSIGN_CONNECT_SECRET = bytes(os.getenv('DOCUSIGN_CONNECT_SECRET', ''),
                                 encoding='utf8')
 EMAIL_DOMAINS = ['uw.edu', 'washington.edu']
 REQUESTOR_ROLES = ['student', 'requestor']
+
+REG_STATUS_ALLOWED = 1
+REG_STATUS_BLOCKED = 4
+
+OK_PROCESSING_STATUS = [200, 202, 404, 412]

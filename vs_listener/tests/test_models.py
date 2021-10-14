@@ -1,7 +1,8 @@
 # Copyright 2021 UW-IT, University of Washington
 # SPDX-License-Identifier: Apache-2.0
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from django.conf import settings
 from vs_listener.models import User, Envelope
 from uw_pws.util import fdao_pws_override
 
@@ -40,11 +41,11 @@ class EnvelopeModelTest(TestCase):
     def test_exemption_status_code(self):
         env = Envelope(status='completed')
         self.assertEqual(env.exemption_status_code,
-                         Envelope.STATUS_CODE_ALLOWED)
+                         settings.REG_STATUS_ALLOWED)
 
         env = Envelope(status='declined')
         self.assertEqual(env.exemption_status_code,
-                         Envelope.STATUS_CODE_BLOCKED)
+                         settings.REG_STATUS_BLOCKED)
 
     def test_valid_role(self):
         self.assertTrue(Envelope.valid_role('STUDENT'))
