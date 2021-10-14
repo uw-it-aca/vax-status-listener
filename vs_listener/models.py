@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
-from django.db.models import Q
 from django.conf import settings
 from django.utils.functional import cached_property
 from django.utils.timezone import utc
@@ -46,9 +45,10 @@ class User(models.Model):
 class EnvelopeManager(models.Manager):
     def _find_requestor(self, data):
         for signer in data.get('recipients', {}).get('signers', []):
+            email = signer.get('email', '').lower()
             if (Envelope.valid_role(signer.get('roleName', '')) and
-                    User.valid_email(signer.get('email', ''))):
-                user, _ = User.objects.get_or_create(signer.get('email'))
+                    User.valid_email(email)):
+                user, _ = User.objects.get_or_create(email=email)
                 return user
 
     def add_envelope(self, data):
@@ -70,8 +70,7 @@ class EnvelopeManager(models.Manager):
 
     def process_envelopes(self):
         envelopes = super(EnvelopeManager, self).get_queryset().filter(
-            Q(processed_date__isnull=True) | ~Q(processed_status_code=200)
-        ).order_by('created_date')
+            processed_date__isnull=True).order_by('created_date')
 
         for envelope in envelopes:
             envelope.update_sws()
@@ -83,8 +82,6 @@ class Envelope(models.Model):
        ('declined', 'declined'),
        ('voided', 'voided')
     )
-    STATUS_CODE_ALLOWED = 1
-    STATUS_CODE_BLOCKED = 4
     VALID_STATUS = [s[0] for s in STATUS_CHOICES]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -100,8 +97,8 @@ class Envelope(models.Model):
 
     @property
     def exemption_status_code(self):
-        return self.STATUS_CODE_ALLOWED if (
-            self.status == 'completed') else self.STATUS_CODE_BLOCKED
+        return settings.REG_STATUS_ALLOWED if (
+            self.status == 'completed') else settings.REG_STATUS_BLOCKED
 
     def __str__(self):
         return 'user: {}, status: {}, form_name: {}'.format(
@@ -121,7 +118,8 @@ class Envelope(models.Model):
             self.processed_status_code = ex.status
             logger.info('Envelope processor error: {}, {}'.format(self, ex))
 
-        self.processed_date = datetime.utcnow().replace(tzinfo=utc)
+        if self.processed_status_code in settings.OK_PROCESSING_STATUS:
+            self.processed_date = datetime.utcnow().replace(tzinfo=utc)
         self.save()
 
     @staticmethod
