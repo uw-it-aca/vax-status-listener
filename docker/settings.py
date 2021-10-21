@@ -10,4 +10,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 DOCUSIGN_CONNECT_SECRET = bytes(os.getenv('DOCUSIGN_CONNECT_SECRET', ''),
                                 encoding='utf8')
 EMAIL_DOMAINS = ['uw.edu', 'washington.edu']
-SIGNER_ROLES = ['student', 'requestor']
+REQUESTOR_ROLES = ['student', 'requestor']
+
+REG_STATUS_ALLOWED = 1
+REG_STATUS_BLOCKED = 4
+
+OK_PROCESSING_STATUS = [200, 202, 404, 412]

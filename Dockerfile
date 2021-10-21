@@ -1,7 +1,7 @@
 FROM gcr.io/uwit-mci-axdd/django-container:1.3.3 as app-container
 
 USER root
-RUN apt-get update && apt-get install libpq-dev vim -y
+RUN apt-get update && apt-get install libpq-dev -y
 USER acait
 
 ADD --chown=acait:acait vs_listener/VERSION /app/vs_listener/

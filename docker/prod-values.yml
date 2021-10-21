@@ -3,13 +3,6 @@ autoscaling:
   minReplicas: 2
   maxReplicas: 4
 targetAverageUtilization: 100
-resources:
-  limits:
-    cpu: 1.0
-    memory: 768Mi
-  requests:
-    cpu: 100m
-    memory: 700Mi
 
 ingress:
   enabled: true
@@ -65,7 +58,7 @@ cronjob:
   enabled: false
   jobs:
     - name: process-env
-      schedule: "*/15 * * * *"
+      schedule: "*/10 * * * *"
       command: ["/scripts/management_command.sh"]
       args: ["process_envelopes"]
 

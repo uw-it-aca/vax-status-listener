@@ -2,11 +2,18 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from django.db import models
-from django.db.models import Q
 from django.conf import settings
 from django.utils.functional import cached_property
+from django.utils.timezone import utc
 from dateutil.parser import parse
+from restclients_core.exceptions import DataFailureException
+from uw_sws.models import RegistrationBlock
+from uw_sws.registration import update_registration_block
 from uw_pws import PWS, InvalidNetID
+from datetime import datetime
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 class User(models.Model):
@@ -36,21 +43,25 @@ class User(models.Model):
 
 
 class EnvelopeManager(models.Manager):
+    def _find_requestor(self, data):
+        for signer in data.get('recipients', {}).get('signers', []):
+            email = signer.get('email', '').lower()
+            if (Envelope.valid_role(signer.get('roleName', '')) and
+                    User.valid_email(email)):
+                user, _ = User.objects.get_or_create(email=email)
+                return user
+
     def add_envelope(self, data):
         if not Envelope.valid_status(data.get('status')):
             return
 
-        for signer in data.get('recipients', {}).get('signers', []):
-            if (not Envelope.valid_role(signer.get('roleName', '')) or
-                    not User.valid_email(signer.get('email', ''))):
-                continue
+        requestor = self._find_requestor(data)
 
-            user, _ = User.objects.get_or_create(email=signer.get('email'))
-
+        if requestor:
             guid = data.get('envelopeId')
             envelope, _ = Envelope.objects.get_or_create(guid=guid, defaults={
-                'user': user,
-                'status': data.get('status'),
+                'user': requestor,
+                'status': data.get('status').lower(),
                 'form_name': data.get('powerForm', {}).get('name'),
                 'status_changed_date': parse(
                     data.get('statusChangedDateTime')),
@@ -58,18 +69,8 @@ class EnvelopeManager(models.Manager):
             return envelope
 
     def process_envelopes(self):
-        """
-        PUT/POST? /student/v5/person/{regid}/registrationblocks
-
-        Upon form delivered/completed and decline/voided  (TBD)
-        - student identifier (likely uwnetid)
-        - "covid block reg status"
-        - "document review status"
-        - exemption flag [set/unset]
-        """
         envelopes = super(EnvelopeManager, self).get_queryset().filter(
-            Q(processed_date__isnull=True) | ~Q(processed_status_code=200)
-        ).order_by('created_date')
+            processed_date__isnull=True).order_by('created_date')
 
         for envelope in envelopes:
             envelope.update_sws()
@@ -77,7 +78,6 @@ class EnvelopeManager(models.Manager):
 
 class Envelope(models.Model):
     STATUS_CHOICES = (
-       ('signed', 'signed'),
        ('completed', 'completed'),
        ('declined', 'declined'),
        ('voided', 'voided')
@@ -95,12 +95,32 @@ class Envelope(models.Model):
 
     objects = EnvelopeManager()
 
+    @property
+    def exemption_status_code(self):
+        return settings.REG_STATUS_ALLOWED if (
+            self.status == 'completed') else settings.REG_STATUS_BLOCKED
+
     def __str__(self):
         return 'user: {}, status: {}, form_name: {}'.format(
             self.user, self.status, self.form_name)
 
     def update_sws(self):
-        pass
+        try:
+            block = RegistrationBlock(
+                uwregid=self.user.uwregid,
+                covid19_status_code=self.exemption_status_code,
+                covid19_status_date=self.status_changed_date,
+            )
+            update_registration_block(block)
+            self.processed_status_code = 200
+            logger.info('Envelope processed: {}'.format(self))
+        except DataFailureException as ex:
+            self.processed_status_code = ex.status
+            logger.info('Envelope processor error: {}, {}'.format(self, ex))
+
+        if self.processed_status_code in settings.OK_PROCESSING_STATUS:
+            self.processed_date = datetime.utcnow().replace(tzinfo=utc)
+        self.save()
 
     @staticmethod
     def valid_status(status):
@@ -108,4 +128,4 @@ class Envelope(models.Model):
 
     @staticmethod
     def valid_role(role):
-        return role.lower() in getattr(settings, 'SIGNER_ROLES', [])
+        return role.lower() in getattr(settings, 'REQUESTOR_ROLES', [])

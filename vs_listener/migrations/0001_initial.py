@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             name='Envelope',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.SlugField(choices=[('signed', 'signed'), ('completed', 'completed'), ('declined', 'declined'), ('voided', 'voided')], max_length=12)),
+                ('status', models.SlugField(choices=[('completed', 'completed'), ('declined', 'declined'), ('voided', 'voided')], max_length=12)),
                 ('form_name', models.CharField(max_length=100)),
                 ('status_changed_date', models.DateTimeField()),
                 ('guid', models.CharField(max_length=36, unique=True)),
