@@ -55,7 +55,7 @@ image:
   tag: IMAGE_TAG
 
 cronjob:
-  enabled: true
+  enabled: false
   jobs:
     - name: process-env
       schedule: "*/10 * * * *"
