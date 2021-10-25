@@ -47,10 +47,11 @@ class EnvelopeManager(models.Manager):
         for signer in data.get('recipients', {}).get('signers', []):
             email = signer.get('email', '').lower()
             if (Envelope.valid_role(signer.get('roleName', '')) and
-                    Envelope.valid_status(signer.get('status')) and
+                    Envelope.valid_status(signer.get('status', '')) and
                     User.valid_email(email)):
                 user, _ = User.objects.get_or_create(email=email)
                 return user, signer.get('status')
+        return None, None
 
     def add_envelope(self, data):
         requestor, req_status = self._find_requestor(data)
