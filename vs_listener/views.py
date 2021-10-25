@@ -50,9 +50,8 @@ class ListenerView(View):
         except Exception as ex:
             return HttpResponse('{}'.format(ex), status=400)
 
-        status = data.get('status')
-        if Envelope.valid_status(status):
-            envelope = Envelope.objects.add_envelope(data)
+        envelope = Envelope.objects.add_envelope(data)
+        if envelope is not None:
             notification_status_counter(status)
         else:
             notification_status_ignored_counter(status)
