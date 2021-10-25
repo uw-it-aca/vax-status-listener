@@ -47,21 +47,23 @@ class EnvelopeManager(models.Manager):
         for signer in data.get('recipients', {}).get('signers', []):
             email = signer.get('email', '').lower()
             if (Envelope.valid_role(signer.get('roleName', '')) and
+                    Envelope.valid_status(signer.get('status')) and
                     User.valid_email(email)):
                 user, _ = User.objects.get_or_create(email=email)
-                return user
+                return user, signer.get('status')
 
     def add_envelope(self, data):
-        if not Envelope.valid_status(data.get('status')):
-            return
-
-        requestor = self._find_requestor(data)
+        requestor, req_status = self._find_requestor(data)
 
         if requestor:
+            status = data.get('status')
+            if not Envelope.valid_status(status):
+                status = req_status
+
             guid = data.get('envelopeId')
             envelope, _ = Envelope.objects.get_or_create(guid=guid, defaults={
                 'user': requestor,
-                'status': data.get('status').lower(),
+                'status': status.lower(),
                 'form_name': data.get('powerForm', {}).get('name'),
                 'status_changed_date': parse(
                     data.get('statusChangedDateTime')),
