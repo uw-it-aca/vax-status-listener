@@ -52,8 +52,8 @@ class ListenerView(View):
 
         envelope = Envelope.objects.add_envelope(data)
         if envelope is not None:
-            notification_status_counter(status)
+            notification_status_counter(envelope.status)
         else:
-            notification_status_ignored_counter(status)
+            notification_status_ignored_counter(data.get('status'))
 
         return HttpResponse(status=200)
