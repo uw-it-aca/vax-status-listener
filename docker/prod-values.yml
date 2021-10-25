@@ -1,6 +1,5 @@
-replicaCount: 1
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 2
   maxReplicas: 4
 targetAverageUtilization: 100
@@ -56,7 +55,7 @@ image:
   tag: IMAGE_TAG
 
 cronjob:
-  enabled: false
+  enabled: true
   jobs:
     - name: process-env
       schedule: "*/10 * * * *"
