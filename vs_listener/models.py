@@ -104,8 +104,8 @@ class Envelope(models.Model):
             self.status == 'completed') else settings.REG_STATUS_BLOCKED
 
     def __str__(self):
-        return 'user: {}, status: {}, form_name: {}'.format(
-            self.user, self.status, self.form_name)
+        return 'user: {}, status: {} ({}), form_name: {}'.format(
+            self.user, self.status, self.exemption_status_code, self.form_name)
 
     def update_sws(self):
         try:
