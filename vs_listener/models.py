@@ -7,11 +7,13 @@ from django.utils.functional import cached_property
 from django.utils.timezone import utc
 from dateutil.parser import parse
 from restclients_core.exceptions import DataFailureException
+from uw_sws.dao import SWS_TIMEZONE
 from uw_sws.models import RegistrationBlock
 from uw_sws.registration import update_registration_block
 from uw_pws import PWS, InvalidNetID
 from datetime import datetime
 from logging import getLogger
+import pytz
 
 logger = getLogger(__name__)
 
@@ -103,6 +105,11 @@ class Envelope(models.Model):
         return settings.REG_STATUS_ALLOWED if (
             self.status == 'completed') else settings.REG_STATUS_BLOCKED
 
+    @property
+    def local_status_changed_date(self):
+        return self.status_changed_date.replace(
+            tzinfo=pytz.utc).astimezone(SWS_TIMEZONE)
+
     def __str__(self):
         return 'user: {}, status: {} ({}), form_name: {}'.format(
             self.user, self.status, self.exemption_status_code, self.form_name)
@@ -112,7 +119,7 @@ class Envelope(models.Model):
             block = RegistrationBlock(
                 uwregid=self.user.uwregid,
                 covid19_status_code=self.exemption_status_code,
-                covid19_status_date=self.status_changed_date,
+                covid19_status_date=self.local_status_changed_date,
             )
             update_registration_block(block)
             self.processed_status_code = 200

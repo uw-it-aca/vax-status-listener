@@ -5,6 +5,7 @@ from django.test import TestCase, override_settings
 from django.conf import settings
 from vs_listener.models import User, Envelope
 from uw_pws.util import fdao_pws_override
+from dateutil.parser import parse
 
 
 @fdao_pws_override
@@ -46,6 +47,12 @@ class EnvelopeModelTest(TestCase):
         env = Envelope(status='declined')
         self.assertEqual(env.exemption_status_code,
                          settings.REG_STATUS_BLOCKED)
+
+    def test_local_status_changed_date(self):
+        dt = parse('2021-10-20 02:30:00.000+00')
+        env = Envelope(status_changed_date=dt)
+        self.assertEqual(str(env.local_status_changed_date),
+                         '2021-10-19 19:30:00-07:00')
 
     def test_valid_role(self):
         self.assertTrue(Envelope.valid_role('STUDENT'))
