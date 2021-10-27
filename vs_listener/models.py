@@ -73,7 +73,7 @@ class EnvelopeManager(models.Manager):
 
     def process_envelopes(self):
         envelopes = super(EnvelopeManager, self).get_queryset().filter(
-            processed_date__isnull=True).order_by('created_date')
+            processed_date__isnull=True).order_by('status_changed_date')
 
         for envelope in envelopes:
             envelope.update_sws()
