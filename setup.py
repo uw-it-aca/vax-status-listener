@@ -15,7 +15,6 @@ setup(
         'Django~=3.2',
         'UW-RestClients-SWS>=2.3.17',
         'UW-RestClients-PWS~=2.1',
-        'psycopg2<2.9',
     ],
     license='Apache License, Version 2.0',
     description=('AXDD listener client for DocuSign Connect events'),
@@ -25,6 +24,5 @@ setup(
         'License :: OSI Approved :: Apache Software License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 3.6',
     ],
 )
