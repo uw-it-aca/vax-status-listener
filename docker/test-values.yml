@@ -79,21 +79,21 @@ externalSecrets:
   enabled: true
   secrets:
     - name: vxstat-dev.axdd.s.uw.edu-secrets
-      externalKey: axdd/kv/data/vxstat/test/secrets
+      externalKey: vxstat/test/secrets
       data:
         - name: django-secret
           property: django-secret
         - name: docusign-connect-secret
           property: docusign-connect-secret
     - name: vxstat-dev.axdd.s.uw.edu-sql-secrets
-      externalKey: axdd/kv/data/vxstat/shared/sql-secrets
+      externalKey: vxstat/shared/sql-secrets
       data:
         - name: username
           property: username
         - name: password
           property: password
     - name: vxstat-dev.axdd.s.uw.edu-ic-certs
-      externalKey: axdd/kv/data/vxstat/test/ic-certs
+      externalKey: vxstat/test/ic-certs
       data:
         - name: vxstat-client-dev.axdd.s.uw.edu-ic.cert
           property: vxstat-client-dev.axdd.s.uw.edu-ic.cert
