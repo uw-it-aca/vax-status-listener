@@ -30,8 +30,6 @@ readiness:
   enabled: true
 securityPolicy:
   enabled: false
-labels:
-  billing-code: "830"
 
 externalService:
   enabled: true
@@ -50,9 +48,6 @@ memcached:
 
 repo: vax-status-listener
 instance: prod
-image:
-  repository: gcr.io/uwit-mci-axdd/vax-status-listener
-  tag: IMAGE_TAG
 
 cronjob:
   enabled: true

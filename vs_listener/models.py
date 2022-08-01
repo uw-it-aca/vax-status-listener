@@ -60,15 +60,20 @@ class EnvelopeManager(models.Manager):
         requestor, req_status = self._find_requestor(data)
 
         if requestor:
+            guid = data.get('envelopeId')
+            form_name = data.get('powerForm', {}).get('name')
             status = data.get('status')
+
             if not Envelope.valid_status(status):
+                logger.info(
+                    'Envelope invalid status: user: {}, status: {}, guid: {}, '
+                    'form_name: {}'.format(requestor, status, guid, form_name))
                 status = req_status
 
-            guid = data.get('envelopeId')
             envelope, _ = Envelope.objects.get_or_create(guid=guid, defaults={
                 'user': requestor,
                 'status': status.lower(),
-                'form_name': data.get('powerForm', {}).get('name'),
+                'form_name': form_name,
                 'status_changed_date': parse(
                     data.get('statusChangedDateTime')),
             })
