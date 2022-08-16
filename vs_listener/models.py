@@ -14,6 +14,7 @@ from uw_sws.registration import update_registration_block
 from uw_pws import PWS, InvalidNetID
 from datetime import datetime
 from logging import getLogger
+import json
 import pytz
 
 logger = getLogger(__name__)
@@ -58,6 +59,7 @@ class EnvelopeManager(models.Manager):
 
     def add_envelope(self, data):
         requestor, req_status = self._find_requestor(data)
+        logger.info('DEBUG ENV: {}'.format(json.dumps(data)))
 
         if requestor:
             guid = data.get('envelopeId')
