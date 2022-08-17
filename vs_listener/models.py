@@ -54,32 +54,40 @@ class EnvelopeManager(models.Manager):
                     Envelope.valid_status(signer.get('status', '')) and
                     User.valid_email(email)):
                 user, _ = User.objects.get_or_create(email=email)
-                return user, signer.get('status')
+                return user, signer.get('status').lower()
         return None, None
 
     def add_envelope(self, data):
         requestor, req_status = self._find_requestor(data)
-        logger.info('DEBUG ENV: {}'.format(json.dumps(data)))
 
         if requestor:
             guid = data.get('envelopeId')
             form_name = data.get('powerForm', {}).get('name')
-            status = data.get('status')
+            status = data.get('status').lower()
+            changed = parse(data.get('statusChangedDateTime'))
 
             if not Envelope.valid_status(status):
-                logger.info(
-                    'Envelope invalid status: user: {}, status: {}, guid: {}, '
-                    'form_name: {}'.format(requestor, status, guid, form_name))
                 status = req_status
 
-            envelope, _ = Envelope.objects.get_or_create(guid=guid, defaults={
+            logger.info(
+                'Envelope received: user: {}, status: {}, guid: {}, '
+                'form_name: {}'.format(requestor, status, guid, form_name))
+
+            env, created = Envelope.objects.get_or_create(guid=guid, defaults={
                 'user': requestor,
-                'status': status.lower(),
                 'form_name': form_name,
-                'status_changed_date': parse(
-                    data.get('statusChangedDateTime')),
+                'status': status,
+                'status_changed_date': changed,
             })
-            return envelope
+
+            if not created and env.status != status:
+                env.status = status
+                env.status_changed_date = changed
+                env.processed_date = None
+                env.processed_status_code = None
+                env.save()
+
+            return env
 
     def process_envelopes(self):
         envelopes = super(EnvelopeManager, self).get_queryset().filter(
