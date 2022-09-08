@@ -80,7 +80,7 @@ class EnvelopeManager(models.Manager):
                 'status_changed_date': changed,
             })
 
-            if not created and env.status != status:
+            if not created:
                 env.status = status
                 env.status_changed_date = changed
                 env.processed_date = None
